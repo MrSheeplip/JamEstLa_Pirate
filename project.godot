@@ -26,6 +26,11 @@ Player="*res://Pirate/scn/Script/Player.gd"
 [display]
 
 window/size/height=1024
+window/size/always_on_top=true
+window/size/test_width=512
+window/size/test_height=512
+window/stretch/mode="viewport"
+window/stretch/aspect="keep"
 
 [input]
 

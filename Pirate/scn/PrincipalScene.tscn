@@ -7,26 +7,28 @@
 [sub_resource type="GDScript" id=1]
 script/source = "extends Node2D
 
-export var LifePlayer : int
-export var HungerPlayer : int
-export var MoneyPlayer : int
-export var bulletPlayer : int
-
 onready var Map : TileMap = $Map
-onready var Interaction : TileMap = $Interaction
 onready var CameraWorld : Viewport = $Viewport
 onready var Selector : Sprite = $Selector
 onready var DebugMode : Panel = $Debug
-onready var PreHungerLabel = $Selector/PreHungerLabel
+onready var SelectorLabel = $Selector/SelectorLabel
 
 var PlayerTiles
 var PlayerPosTile
 var PlayerPosReal
 
+var MapSize : Array
+var ChestPos
+var IslandTiles : Array
+
 var MousePosReal
 var MousePosTile
 
 var SelectorIsActived : bool
+var SelectorOnPlayer : bool
+var SelectorOnChest : bool
+var SelectorOnIsland : bool
+
 var DistanceMax : int 
 
 func _ready():
@@ -35,36 +37,71 @@ func _ready():
 	SelectorIsActived = false
 	Selector.visible = false
 	
+	MapSize = Map.get_used_cells()
+	RandiTiles()
 	
 func _process(delta):
 	var DebugMousePos
+	var IslandCellPos
 	
 	Debug()
 	SelectorMovement()
 	
-	if SelectorIsActived:
-		Player.Hunger(PlayerPosTile,MousePosTile,DistanceMax,PreHungerLabel,HungerPlayer)
-	else:
+	if SelectorIsActived: #si le curseur est apparu sur l'écran
+		if SelectorOnPlayer: 
+			Player.movement(PlayerPosTile,MousePosTile,DistanceMax,SelectorLabel)
+		if SelectorOnChest:
+			if MousePosTile != ChestPos:
+				SelectorIsActived = false
+				Selector.visible = false
+				SelectorOnChest = false
+		if SelectorOnIsland:
+			if MousePosTile != IslandCellPos:
+				SelectorOnIsland = false
+				SelectorIsActived = false
+				Selector.visible = false
+	else: #si le curseur n'est pas sur l'écran
 		Selector.visible = false
-		if Input.is_action_just_pressed(\"MouseLeft\") and MousePosTile == PlayerPosTile:
+		if Input.is_action_just_pressed(\"MouseLeft\") and MousePosTile == PlayerPosTile: #si souris sur Navire
+			SelectorOnPlayer = true
 			SelectorIsActived = true
 			Selector.visible = true
+		elif MousePosTile == ChestPos: #si souris sur Coffre
+			SelectorIsActived = true
+			Selector.visible = true
+			SelectorOnChest = true
+		if IslandCellPos == null:
+			for islandCell in IslandTiles:
+				if MousePosTile == islandCell:
+					SelectorOnIsland = true
+					SelectorIsActived = true
+					Selector.visible = true
+					IslandCellPos = islandCell
 	
-func SelectorMovement():
+func SelectorMovement(): #gère tout ce qui concerne le curseur
 	var Offset = Vector2(32,32)
 	var PreHunger : int
 	
-	MousePosReal = CameraWorld.get_mouse_position()
+	MousePosReal = get_global_mouse_position()
 	MousePosTile = Map.world_to_map(MousePosReal)
 	
-	Selector.position = Map.map_to_world(MousePosTile) + Offset
-	PreHunger = Player.Hunger(PlayerPosTile,MousePosTile,DistanceMax,PreHungerLabel,HungerPlayer)
+	Selector.position = lerp(Selector.position,Map.map_to_world(MousePosTile) + Offset, 0.2)
 	
-	if Input.is_action_just_pressed(\"MouseRight\") and SelectorIsActived:
+	#Change le texte du label
+	if SelectorIsActived and SelectorOnPlayer: #si Navire
+		PreHunger = Player.movement(PlayerPosTile,MousePosTile,DistanceMax,SelectorLabel)
+	if SelectorIsActived and SelectorOnChest: #si Coffre
+		SelectorLabel.text = \"Chest\"
+	if SelectorIsActived and SelectorOnIsland:
+		SelectorLabel.text = \"Island\"
+		
+		
+	# Si le joueur appuye sur le navire
+	if Input.is_action_just_pressed(\"MouseRight\") and SelectorIsActived and SelectorOnPlayer:
 		SelectorIsActived = false
 		yield(get_tree().create_timer(0,1),\"timeout\")
-	if Input.is_action_just_pressed(\"MouseLeft\") and SelectorIsActived:
-		if HungerPlayer > PreHunger or HungerPlayer == PreHunger:
+	if Input.is_action_just_pressed(\"MouseLeft\") and SelectorIsActived and SelectorOnPlayer:
+		if Player.Hunger > PreHunger or Player.Hunger == PreHunger:
 			if PlayerPosTile != MousePosTile:
 				MovePlayer(PreHunger)
 
@@ -75,13 +112,41 @@ func PlayerTiles():
 	
 func MovePlayer(preHunger):
 	if SelectorIsActived:
-		HungerPlayer -= preHunger
+		Player.Hunger -= preHunger
 		Map.set_cellv(MousePosTile,1)
 		SelectorIsActived = false
 		yield(get_tree().create_timer(0,1),\"timeout\")
 		Map.set_cellv(PlayerPosTile,0)
 		PlayerTiles()
 
+func RandiTiles():
+	var CellsRandi : Array
+	
+	for cell in MapSize:
+		var DistanceToPlayer
+		DistanceToPlayer = cell.distance_to(PlayerPosTile) as int
+		if DistanceToPlayer > 5 :
+			CellsRandi.append(cell)
+	
+	while  ChestPos == null:
+		var randiArray 
+		var randiPos =  CellsRandi.size()
+		randiArray = randi() % randiPos
+		ChestPos = CellsRandi[randiArray]
+		Map.set_cellv(ChestPos,3)
+
+	print (ChestPos)
+
+	while  IslandTiles.size() < 4:
+			var SetCellPos
+			var randiArray 
+			var randiPos =  CellsRandi.size()
+			randiArray = randi() % randiPos + 1
+			SetCellPos = CellsRandi[randiArray]
+			if !SetCellPos == ChestPos:
+				Map.set_cellv(SetCellPos,4)
+				IslandTiles.append(SetCellPos)
+	
 func Debug():
 	var MousePosRealDebug := $Debug/MousePosReal
 	var MousePosTileDebug := $Debug/MousePosTile
@@ -91,9 +156,9 @@ func Debug():
 	
 	MousePosRealDebug.text = \"MousePos : \" + str(MousePosReal)
 	MousePosTileDebug.text = \"MousePos : \" + str(MousePosTile)
-	LifeDebug.text = \"Life : \" + str(LifePlayer)
-	HungerDebug.text = \"Hunger : \" + str(HungerPlayer)
-	MoneyDebug.text = \"Money : \" + str(MoneyPlayer)
+	LifeDebug.text = \"Life : \" + str(Player.Life)
+	HungerDebug.text = \"Hunger : \" + str(Player.Hunger)
+	MoneyDebug.text = \"Money : \" + str(Player.Money)
 	
 "
 
@@ -176,7 +241,6 @@ font_data = ExtResource( 3 )
 
 [node name="PrincipalScene" type="Node2D"]
 script = SubResource( 1 )
-HungerPlayer = 20
 
 [node name="Map" type="TileMap" parent="."]
 tile_set = SubResource( 2 )
@@ -186,7 +250,7 @@ tile_data = PoolIntArray( 0, 0, 0, 1, 0, 0, 2, 0, 0, 3, 0, 0, 4, 0, 0, 5, 0, 0, 
 [node name="Selector" type="Sprite" parent="."]
 texture = ExtResource( 2 )
 
-[node name="PreHungerLabel" type="Label" parent="Selector"]
+[node name="SelectorLabel" type="Label" parent="Selector"]
 margin_left = 40.0
 margin_top = -32.0
 margin_right = 184.0
@@ -198,8 +262,6 @@ align = 1
 __meta__ = {
 "_edit_use_anchors_": false
 }
-
-[node name="Viewport" type="Viewport" parent="."]
 
 [node name="Debug" type="Panel" parent="."]
 modulate = Color( 1, 1, 1, 0.686275 )
