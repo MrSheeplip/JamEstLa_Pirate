@@ -5,16 +5,17 @@ var Hunger : int = 20
 var Money : int 
 var bullet : int
 
-func movement(playerPosTile, mousePosTile, distanceMax, preHungerLabel : Label):
+func movement(playerPosTile, mousePosTile, preHungerLabel : Label):
 	var DistancePlayerToMouse = playerPosTile.distance_to(mousePosTile) as int 
 	var PreHunger : int
 	var RedFont = Color(1, 0, 0, 1) 
+	var DistanceMax : int
 	
-	if DistancePlayerToMouse > distanceMax:
-		distanceMax = DistancePlayerToMouse + 1
+	if DistancePlayerToMouse > DistanceMax:
+		DistanceMax = DistancePlayerToMouse + 1
 		PreHunger += DistancePlayerToMouse * 2
-	elif DistancePlayerToMouse < distanceMax:
-		distanceMax = DistancePlayerToMouse - 1
+	elif DistancePlayerToMouse < DistanceMax:
+		DistanceMax = DistancePlayerToMouse - 1
 	
 	if Hunger < PreHunger:
 		preHungerLabel.self_modulate = "e12222"

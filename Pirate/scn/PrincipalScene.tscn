@@ -13,23 +13,23 @@ onready var Selector : Sprite = $Selector
 onready var DebugMode : Panel = $Debug
 onready var SelectorLabel = $Selector/SelectorLabel
 
-var PlayerTiles
-var PlayerPosTile
-var PlayerPosReal
+var PlayerTile # Array avec la node du joueur sur la tilemap
+var PlayerPosTile # Pos du joueur (Tilemap)
+var PlayerPosReal # Pos du joueur (Monde)
 
-var MapSize : Array
-var ChestPos
-var IslandTiles : Array
+var MapSize : Array #Array avec tout les nodes des cellules sur la tilemap
+var ChestPos  #Pos du coffre (tilemap)
+var IslandTiles : Array #Array avec tout les cellules des îles (tilemap)
 
-var MousePosReal
-var MousePosTile
+var MousePosReal #pos de la souris (monde)
+var MousePosTile # pos de la souris (tilemap)
 
+# bool en fonction du cursor
 var SelectorIsActived : bool
 var SelectorOnPlayer : bool
 var SelectorOnChest : bool
 var SelectorOnIsland : bool
-
-var DistanceMax : int 
+var SelectorOnMovement : bool
 
 func _ready():
 	Map.set_cell(7,7,1)
@@ -49,7 +49,9 @@ func _process(delta):
 	
 	if SelectorIsActived: #si le curseur est apparu sur l'écran
 		if SelectorOnPlayer: 
-			Player.movement(PlayerPosTile,MousePosTile,DistanceMax,SelectorLabel)
+			Player.movement(PlayerPosTile,MousePosTile,SelectorLabel)
+		if SelectorOnMovement:
+			pass
 		if SelectorOnChest:
 			if MousePosTile != ChestPos:
 				SelectorIsActived = false
@@ -86,7 +88,7 @@ func SelectorMovement(): #gère tout ce qui concerne le curseur
 	
 	#Change le texte du label
 	if SelectorIsActived and SelectorOnPlayer: #si Navire
-		PreHunger = Player.movement(PlayerPosTile,MousePosTile,DistanceMax,SelectorLabel)
+		PreHunger = Player.movement(PlayerPosTile,MousePosTile,SelectorLabel)
 	if SelectorIsActived and SelectorOnChest: #si Coffre
 		SelectorLabel.text = \"Chest\"
 	if SelectorIsActived and SelectorOnIsland:
@@ -102,8 +104,8 @@ func SelectorMovement(): #gère tout ce qui concerne le curseur
 				MovePlayer(PreHunger)
 
 func PlayerTiles():
-	PlayerTiles = Map.get_used_cells_by_id(1) #array
-	for player in PlayerTiles:
+	PlayerTile = Map.get_used_cells_by_id(1) #array
+	for player in PlayerTile:
 		PlayerPosTile = player
 	
 func MovePlayer(preHunger):
@@ -130,8 +132,6 @@ func RandiTiles():
 		randiArray = randi() % randiPos
 		ChestPos = CellsRandi[randiArray]
 		Map.set_cellv(ChestPos,3)
-
-	print (ChestPos)
 
 	while  IslandTiles.size() < 4:
 			var SetCellPos
