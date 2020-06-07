@@ -22,6 +22,7 @@ config/icon="res://icon.png"
 [autoload]
 
 Player="*res://Pirate/scn/Script/Player.gd"
+CoreNode="*res://Pirate/scn/PrincipalScene.tscn"
 
 [display]
 
