@@ -4,10 +4,10 @@ onready var BaseNode = get_parent()
 onready var Map : TileMap = get_parent().get_node("Map")
 onready var SelectorLabel : Label = $SelectorLabel
 
-
 var PlayerPosTile 
 var MousePosReal #pos de la souris (monde)
 var MousePosTile # pos de la souris (tilemap)
+var PreHunger : int
 
 # bool en fonction du cursor
 var SelectorIsActived : bool
@@ -18,7 +18,6 @@ var SelectorOnMovement : bool
 
 func _ready():
 	visible = false
-	SelectorIsActived = false
 	SelectorOnChest = false
 	SelectorOnIsland = false
 	SelectorOnPlayer = false
@@ -46,7 +45,14 @@ func SelectorTextLabel():
 	return TextLabel
 
 func PlayerOnMove():
-	var PreHunger : int
+	var RedFont = Color(1, 0, 0, 1) 
+	PreHunger = Player.Hunger(PlayerPosTile, MousePosTile)
+
+	if Player.Hunger < PreHunger:
+		SelectorLabel.self_modulate = "e12222"
+	else:
+		SelectorLabel.self_modulate = "ffffff"
+	SelectorLabel.text = "-" + str(PreHunger) + " Hunger"
 	
 	if Input.is_action_just_pressed("MouseRight") and SelectorOnMovement:
 		SelectorOnMovement = false
@@ -58,46 +64,52 @@ func PlayerOnMove():
 				MovePlayer(PreHunger)
 
 func SelectorChoose():
-	if SelectorOnPlayer:
-		if PlayerPosTile != MousePosTile:
-			SelectorOnPlayer = false
-			visible = false
+	if SelectorOnMovement:
+		PlayerOnMove()
 	else:
 		if PlayerPosTile == MousePosTile and Input.is_action_just_pressed("MouseLeft"):
-			SelectorOnPlayer = false
-			SelectorOnMovement = true
-		if PlayerPosTile == MousePosTile and not Input.is_action_just_pressed("MouseLeft"):
-			SelectorOnPlayer = true
-			SelectorLabel.text = SelectorTextLabel()
-			visible = true
-		
-	
-	if SelectorOnChest:
-		if MousePosTile != Map.ChestPos:
-			visible = false
+				SelectorOnPlayer = false
+				SelectorOnMovement = true
+		elif PlayerPosTile == MousePosTile and not Input.is_action_just_pressed("MouseLeft"):
+				SelectorOnPlayer = true
+				visible = true
+				SelectorLabel.text = SelectorTextLabel()
+		elif MousePosTile == Map.ChestPos: #si souris sur Coffre
+				SelectorOnChest = true
+				SelectorLabel.text = SelectorTextLabel()
+				visible = true
+		elif Map.IslandTiles.has(MousePosTile):
+				SelectorOnIsland = true
+				SelectorLabel.text = SelectorTextLabel()
+				visible = true
+		else:
 			SelectorOnChest = false
-	else:
-		if MousePosTile == Map.ChestPos: #si souris sur Coffre
-			SelectorOnChest = true
-			SelectorLabel.text = SelectorTextLabel()
-			visible = true
-	
-	if SelectorOnIsland:
-		if not Map.IslandTiles.has(MousePosTile):
 			SelectorOnIsland = false
-			SelectorIsActived = false
+			SelectorOnPlayer = false
 			visible = false
-	else:
-		if Map.IslandTiles.has(MousePosTile):
-			SelectorOnIsland = true
-			SelectorLabel.text = SelectorTextLabel()
-			visible = true
 
 func MovePlayer(preHunger):
-	if SelectorIsActived:
+	if MousePosTile == Map.ChestPos: #si souris sur Coffre
+		Player.Hunger -= preHunger
+		Map.set_cellv(Map.ChestPos,1)
+		yield(get_tree().create_timer(0,1),"timeout")
+		Map.set_cellv(PlayerPosTile,0)
+		PlayerPosTile = Map.PlayerTiles()
+		Map.RandiTiles()
+		SelectorOnMovement = false
+	elif Map.IslandTiles.has(MousePosTile):
+		Player.Hunger -= preHunger
+		Map.set_cellv(MousePosTile,1)
+		yield(get_tree().create_timer(0,1),"timeout")
+		Map.set_cellv(PlayerPosTile,0)
+		PlayerPosTile = Map.PlayerTiles()
+		Map.RandiTiles()
+		SelectorOnMovement = false
+	else:
 		Player.Hunger -= preHunger
 		Map.set_cellv(MousePosTile,1)
 		SelectorIsActived = false
 		yield(get_tree().create_timer(0,1),"timeout")
 		Map.set_cellv(PlayerPosTile,0)
-		CoreNode.PlayerTiles()
+		PlayerPosTile = Map.PlayerTiles()
+		SelectorOnMovement = false
