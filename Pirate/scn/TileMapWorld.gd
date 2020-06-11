@@ -32,6 +32,7 @@ func RandiTiles():
 		randiArray = randi() % randiPos
 		ChestPos = CellsRandi[randiArray]
 		set_cellv(ChestPos,3)
+		print ("New ChestPos: " + str(ChestPos))
 
 	while  IslandTiles.size() < 4:
 			var SetCellPos
@@ -42,3 +43,4 @@ func RandiTiles():
 			if !SetCellPos == ChestPos:
 				set_cellv(SetCellPos,4)
 				IslandTiles.append(SetCellPos)
+				print ("New Islands Pos: " + str(IslandTiles))

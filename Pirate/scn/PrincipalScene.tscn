@@ -14,11 +14,10 @@ onready var Selector : Sprite = $Selector
 onready var DebugMode : Panel = $Debug
 	
 func _process(delta):
-
 	Debug()
 	Selector.SelectorMovement()
 	Selector.SelectorChoose()
-
+	
 func Debug():
 	var MousePosRealDebug := $Debug/MousePosReal
 	var MousePosTileDebug := $Debug/MousePosTile

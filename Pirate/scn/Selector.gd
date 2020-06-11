@@ -56,24 +56,26 @@ func PlayerOnMove():
 	
 	if Input.is_action_just_pressed("MouseRight") and SelectorOnMovement:
 		SelectorOnMovement = false
+		SelectorLabel.self_modulate = "ffffff"
 		visible = false
-		yield(get_tree().create_timer(0,1),"timeout")
+		
 	if Input.is_action_just_pressed("MouseLeft") and SelectorOnMovement:
 		if Player.Hunger > PreHunger or Player.Hunger == PreHunger:
-			if PlayerPosTile != MousePosTile:
-				MovePlayer(PreHunger)
+			if MousePosTile != PlayerPosTile :
+				MovePlayer()
 
 func SelectorChoose():
 	if SelectorOnMovement:
 		PlayerOnMove()
 	else:
 		if PlayerPosTile == MousePosTile and Input.is_action_just_pressed("MouseLeft"):
-				SelectorOnPlayer = false
-				SelectorOnMovement = true
+			SelectorOnMovement = true
+			visible = true
+			SelectorLabel.text = SelectorTextLabel()
 		elif PlayerPosTile == MousePosTile and not Input.is_action_just_pressed("MouseLeft"):
-				SelectorOnPlayer = true
-				visible = true
-				SelectorLabel.text = SelectorTextLabel()
+			SelectorOnPlayer = true
+			visible = true
+			SelectorLabel.text = SelectorTextLabel()
 		elif MousePosTile == Map.ChestPos: #si souris sur Coffre
 				SelectorOnChest = true
 				SelectorLabel.text = SelectorTextLabel()
@@ -88,28 +90,20 @@ func SelectorChoose():
 			SelectorOnPlayer = false
 			visible = false
 
-func MovePlayer(preHunger):
-	if MousePosTile == Map.ChestPos: #si souris sur Coffre
-		Player.Hunger -= preHunger
-		Map.set_cellv(Map.ChestPos,1)
-		yield(get_tree().create_timer(0,1),"timeout")
-		Map.set_cellv(PlayerPosTile,0)
-		PlayerPosTile = Map.PlayerTiles()
-		Map.RandiTiles()
-		SelectorOnMovement = false
-	elif Map.IslandTiles.has(MousePosTile):
-		Player.Hunger -= preHunger
-		Map.set_cellv(MousePosTile,1)
-		yield(get_tree().create_timer(0,1),"timeout")
-		Map.set_cellv(PlayerPosTile,0)
-		PlayerPosTile = Map.PlayerTiles()
-		Map.RandiTiles()
-		SelectorOnMovement = false
-	else:
-		Player.Hunger -= preHunger
-		Map.set_cellv(MousePosTile,1)
-		SelectorIsActived = false
-		yield(get_tree().create_timer(0,1),"timeout")
-		Map.set_cellv(PlayerPosTile,0)
-		PlayerPosTile = Map.PlayerTiles()
-		SelectorOnMovement = false
+func MovePlayer():
+	Map.set_cellv(MousePosTile,1)
+	Map.set_cellv(PlayerPosTile,0)
+	PlayerPosTile = Map.PlayerTiles()
+	
+	if PlayerPosTile == Map.ChestPos:
+		Map.ChestPos = null
+	if Map.IslandTiles.has(PlayerPosTile):
+		print ("1")
+		Map.IslandTiles.clear()
+		Map.IslandTiles = Map.get_used_cells_by_id(4)
+		
+	Map.RandiTiles()
+	yield(get_tree().create_timer(0,1),"timeout")
+	Player.Hunger -= PreHunger
+	SelectorOnMovement = false
+	
