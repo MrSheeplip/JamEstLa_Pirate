@@ -24,12 +24,14 @@ func Debug():
 	var LifeDebug := $Debug/Life
 	var HungerDebug := $Debug/Hunger
 	var MoneyDebug := $Debug/Money
+	var BulletDebug := $Debug/Bullet
 	
 	MousePosRealDebug.text = \"MousePos : \" + str(Selector.MousePosReal)
 	MousePosTileDebug.text = \"MousePos : \" + str(Selector.MousePosTile)
 	LifeDebug.text = \"Life : \" + str(Player.Life)
-	HungerDebug.text = \"Hunger : \" + str(Player.Hunger)
+	HungerDebug.text = \"Hunger : \" + str(Player.Food)
 	MoneyDebug.text = \"Money : \" + str(Player.Money)
+	BulletDebug.text = \"Bullet : \" + str(Player.Bullets)
 	
 "
 
@@ -141,7 +143,7 @@ modulate = Color( 1, 1, 1, 0.686275 )
 margin_left = 24.0
 margin_top = 16.0
 margin_right = 256.0
-margin_bottom = 112.0
+margin_bottom = 131.0
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -186,3 +188,13 @@ margin_top = 72.0
 margin_right = 136.0
 margin_bottom = 88.0
 text = "Money: "
+
+[node name="Bullet" type="Label" parent="Debug"]
+margin_left = 8.0
+margin_top = 87.5841
+margin_right = 136.0
+margin_bottom = 103.584
+text = "Bullets: "
+__meta__ = {
+"_edit_use_anchors_": false
+}

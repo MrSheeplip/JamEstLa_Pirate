@@ -41,14 +41,14 @@ func SelectorTextLabel():
 	if SelectorOnChest:
 		TextLabel = "A Chest"
 	if SelectorOnIsland:
-		TextLabel = "A unknow island"
+		TextLabel = "An unknown island"
 	return TextLabel
 
 func PlayerOnMove():
 	var RedFont = Color(1, 0, 0, 1) 
 	PreHunger = Player.Hunger(PlayerPosTile, MousePosTile)
 
-	if Player.Hunger < PreHunger:
+	if Player.Food < PreHunger:
 		SelectorLabel.self_modulate = "e12222"
 	else:
 		SelectorLabel.self_modulate = "ffffff"
@@ -60,8 +60,8 @@ func PlayerOnMove():
 		visible = false
 		
 	if Input.is_action_just_pressed("MouseLeft") and SelectorOnMovement:
-		if Player.Hunger > PreHunger or Player.Hunger == PreHunger:
-			if MousePosTile != PlayerPosTile :
+		if Player.Food > PreHunger or Player.Food == PreHunger:
+			if MousePosTile != PlayerPosTile or !Map.MapSize.has(MousePosTile) :
 				MovePlayer()
 
 func SelectorChoose():
@@ -95,15 +95,18 @@ func MovePlayer():
 	Map.set_cellv(PlayerPosTile,0)
 	PlayerPosTile = Map.PlayerTiles()
 	
+	Player.Food -= PreHunger
+	
 	if PlayerPosTile == Map.ChestPos:
 		Map.ChestPos = null
 	if Map.IslandTiles.has(PlayerPosTile):
-		print ("1")
+		Player.FoundChest()
 		Map.IslandTiles.clear()
 		Map.IslandTiles = Map.get_used_cells_by_id(4)
 		
+		
 	Map.RandiTiles()
 	yield(get_tree().create_timer(0,1),"timeout")
-	Player.Hunger -= PreHunger
-	SelectorOnMovement = false
 	
+	SelectorOnMovement = false
+

@@ -6,6 +6,7 @@ var ChestPos  #Pos du coffre (tilemap)
 var IslandTiles : Array #Array avec tout les cellules des îles (tilemap)
 
 func _ready():
+	randomize()
 	set_cell(7,7,1)
 	MapSize = get_used_cells()
 	RandiTiles()
@@ -23,7 +24,7 @@ func RandiTiles():
 	for cell in MapSize:
 		var DistanceToPlayer
 		DistanceToPlayer = cell.distance_to(PlayerTiles()) as int
-		if DistanceToPlayer > 5 :
+		if DistanceToPlayer > 2 and DistanceToPlayer < 8 :
 			CellsRandi.append(cell)
 	
 	while ChestPos == null:
@@ -40,7 +41,7 @@ func RandiTiles():
 			var randiPos =  CellsRandi.size()
 			randiArray = randi() % randiPos + 1
 			SetCellPos = CellsRandi[randiArray]
-			if !SetCellPos == ChestPos:
+			if !SetCellPos == ChestPos or !IslandTiles.has(SetCellPos):
 				set_cellv(SetCellPos,4)
 				IslandTiles.append(SetCellPos)
 				print ("New Islands Pos: " + str(IslandTiles))
