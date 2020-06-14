@@ -16,16 +16,21 @@ _global_script_class_icons={
 [application]
 
 config/name="Jam Est La Pirate"
-run/main_scene="res://Pirate/scn/PrincipalScene.tscn"
+run/main_scene="res://Pirate/scn/Principal/Scn_Principal.tscn"
 config/icon="res://icon.png"
 
 [autoload]
 
-Player="*res://Pirate/scn/Script/Player.gd"
+Player="*res://Pirate/scn/Principal/Player.gd"
 
 [display]
 
 window/size/height=1024
+window/size/always_on_top=true
+window/size/test_width=512
+window/size/test_height=512
+window/stretch/mode="viewport"
+window/stretch/aspect="keep"
 
 [input]
 
