@@ -22,12 +22,12 @@ func Hunger(playerPosTile, mousePosTile):
 		DistanceMax = DistancePlayerToMouse - 1
 	return PreHunger
 
-func FoundChest():
+func FoundIsland():
 	var PreFood : int
 	var PreBullet : int
 	var randiLoot
+	
 	randiLoot = randi() % 2
-	print (randiLoot)
 	
 	if randiLoot == 0:
 		Loot = Loots.FOOD
@@ -39,9 +39,28 @@ func FoundChest():
 			if Food < 20:
 				PreFood = 8 + randi() % 10
 				Food += PreFood
-				print ("Food: " + str(PreFood))
+				print ("Add Food: " + str(PreFood))
+			else:
+				FoundIsland()
 		Loots.AMMUNITION:
 			if Bullets < 3:
 				PreBullet = 1 + randi() % 2
 				Player.Bullets += PreBullet
-				print ("Bullets: " + str(PreBullet))
+				print ("Add Bullets: " + str(PreBullet))
+			else:
+				FoundIsland()
+
+func FoundChest():
+	var PreMoney
+	
+	PreMoney = 1 + randi() % 100
+	Money += PreMoney
+	print ("Add Money : " + str(PreMoney))
+
+func EnemyAttack():
+	if Bullets > 0:
+		Bullets -= 1
+		print ("Use one Bullet")
+	else:
+		Life -= 1
+		print ("take one damage")

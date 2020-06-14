@@ -63,6 +63,7 @@ func PlayerOnMove():
 		if Player.Food > PreHunger or Player.Food == PreHunger:
 			if MousePosTile != PlayerPosTile or !Map.MapSize.has(MousePosTile) :
 				MovePlayer()
+				Map.MoveEnemy()
 
 func SelectorChoose():
 	if SelectorOnMovement:
@@ -98,12 +99,16 @@ func MovePlayer():
 	Player.Food -= PreHunger
 	
 	if PlayerPosTile == Map.ChestPos:
+		Player.FoundChest()
 		Map.ChestPos = null
 	if Map.IslandTiles.has(PlayerPosTile):
-		Player.FoundChest()
+		Player.FoundIsland()
 		Map.IslandTiles.clear()
 		Map.IslandTiles = Map.get_used_cells_by_id(4)
-		
+	if Map.EnemyTiles.has(PlayerPosTile):
+		Player.EnemyAttack()
+		Map.IslandTiles.clear()
+		Map.IslandTiles = Map.get_used_cells_by_id(2)
 		
 	Map.RandiTiles()
 	yield(get_tree().create_timer(0,1),"timeout")
