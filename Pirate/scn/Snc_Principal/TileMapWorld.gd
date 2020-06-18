@@ -1,6 +1,5 @@
 extends TileMap
 
-
 var MapSize : Array #Array avec tout les nodes des cellules sur la tilemap
 var ChestPos  #Pos du coffre (tilemap)
 var IslandTiles : Array #Array avec tout les cellules des îles (tilemap)
@@ -67,25 +66,43 @@ func RandiTiles():
 			EnemyTiles.append(SetCellPos)
 	print ("New Enemy Pos: " + str(EnemyTiles))
 	
-func MoveEnemy():
-	var CellNearest : Array
-	
+func DetectionEnemy():
 	for enemy in EnemyTiles:
-		var EnemyDistanceToPlayer
-		var CellNearToEnemy
+		var EnemyDistanceToPlayer = enemy.distance_to(PlayerPos) as int
 		
-		for cell in MapSize:
-			if cell.distance_to(enemy) < 2:
-				CellNearest.append(cell)
-		for cell in CellNearest:
-			EnemyDistanceToPlayer = enemy.distance_to(PlayerPos) as int
+		if EnemyDistanceToPlayer < 2:
+			HuntEnemy(enemy)
+		else:
+			MoveEnemy(enemy)
 			
-		print(CellNearest)
-				
-#			if DistanceToPlayer < 5:
-#					var NeaerestCell : Vector2
-#					var minimalDistance = playerPos.distance_to(Vector2(2000,2000))
-#					var distance = playerPos.distance_to(cell)
-#					if distance < minimalDistance:
-#						minimalDistance = distance
-#						nearestCell = cell
+	EnemyTiles.clear()
+	EnemyTiles = get_used_cells_by_id(2)
+			
+
+func MoveEnemy(enemy):
+	var CellNearest : Array
+	var PrePosEnemy : int
+	
+	for cell in MapSize:
+		if cell.distance_to(enemy) < 2:
+			CellNearest.append(cell)
+	
+	PrePosEnemy = randi() % CellNearest.size()
+	
+	
+	set_cellv(enemy,0)
+	set_cellv(CellNearest[PrePosEnemy], 2)
+	
+
+func HuntEnemy(enemy):
+	var CellNearest : Array
+	var EnemyDistanceToPlayer
+	var CellNearToEnemy #Array avec tout les cellules proches des ennemies
+	
+	for cell in MapSize:
+		if cell.distance_to(enemy) < 2:
+			CellNearest.append(cell)
+	for cell in CellNearest:
+		EnemyDistanceToPlayer = enemy.distance_to(Vector2(PlayerPos.x,PlayerPos.y)) as int
+		
+	print("HuntPlayer: " + str(CellNearest))

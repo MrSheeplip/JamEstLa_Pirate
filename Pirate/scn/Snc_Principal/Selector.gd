@@ -63,7 +63,7 @@ func PlayerOnMove():
 		if Player.Food > PreHunger or Player.Food == PreHunger:
 			if MousePosTile != PlayerPosTile or !Map.MapSize.has(MousePosTile) :
 				MovePlayer()
-				Map.MoveEnemy()
+				Map.DetectionEnemy()
 
 func SelectorChoose():
 	if SelectorOnMovement:
